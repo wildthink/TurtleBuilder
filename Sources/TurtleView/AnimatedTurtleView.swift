@@ -1,8 +1,8 @@
 import Foundation
-import UIKit
+import SwiftUI
 import TurtleBuilder
 
-fileprivate protocol AnimationLooperDelegate: class {
+fileprivate protocol AnimationLooperDelegate: AnyObject {
 	func turtleAnimatorDidEnd(_ animator: TurtleAnimator)
 }
 
@@ -75,99 +75,98 @@ fileprivate class TurtleAnimator: NSObject, CAAnimationDelegate {
 	}
 }
 
-public class AnimatedTurtleView: UIView, AnimationLooperDelegate {
-	private var turtle: Turtle
-
-	public var strokeColor: UIColor = UIColor.green {
-		didSet {
-			self.shapeLayers.forEach { layer in
-				layer.strokeColor = strokeColor.cgColor
-			}
-		}
-	}
-	public var fillColor: UIColor = UIColor.clear {
-		didSet {
-			self.shapeLayers.forEach { layer in
-				layer.fillColor = fillColor.cgColor
-			}
-		}
-	}
-
-	public init(frame: CGRect, turtle: Turtle) {
-		self.turtle = turtle
-		super.init(frame: frame)
-		self.backgroundColor = UIColor.clear
-		self.shapeLayers = makeLayers()
-	}
-
-	public convenience init(frame: CGRect,
-							@TurtleBuilder builder:()-> [TurtleCommand]) {
-		let turtle = Turtle(builder: builder)
-		self.init(frame: frame, turtle: turtle)
-	}
-
-	required init?(coder: NSCoder) {
-		fatalError("init(coder:) has not been implemented")
-	}
-
-	private var shapeLayers: [CAShapeLayer] = [] {
-		willSet {
-			self.shapeLayers.forEach { layer in
-				layer.removeFromSuperlayer()
-			}
-		}
-		didSet {
-			self.shapeLayers.forEach { layer in
-				self.layer.addSublayer(layer)
-			}
-		}
-	}
-
-	private func makeLayers() -> [CAShapeLayer] {
-		let center = CGPoint(x: self.bounds.width / 2, y: self.bounds.height / 2)
-		var layers = [CAShapeLayer]()
-		for sequence in turtle.lines {
-			if sequence.count < 2 {
-				continue
-			}
-			let path = UIBezierPath()
-			path.lineWidth = 3
-			path.move(to: transalte(sequence[0], center: center))
-			for point in sequence[1...] {
-				path.addLine(to: transalte(point, center: center))
-			}
-			let layer = CAShapeLayer()
-			layer.frame = self.bounds
-			layer.path = path.cgPath
-			layer.strokeColor = strokeColor.cgColor
-			layer.fillColor = fillColor.cgColor
-			layer.lineWidth = 3
-			layers.append(layer)
-		}
-		return layers
-	}
-
-	private var animator: TurtleAnimator?
-
-	public func animate(showTurtle: Bool = false) {
-		CATransaction.begin()
-		CATransaction.disableActions()
-		self.shapeLayers.forEach { layer in
-			layer.removeAllAnimations()
-			layer.strokeEnd = 0
-		}
-		CATransaction.commit()
-		self.animator = TurtleAnimator(self.shapeLayers, showTurtle: showTurtle)
-	}
-
-	fileprivate func turtleAnimatorDidEnd(_ animationLooper: TurtleAnimator) {
-		self.animator = nil
-	}
-
-	public func rebuildLayers() {
-		self.shapeLayers = makeLayers()
-	}
-
-}
-
-
+//public class AnimatedTurtleView: UIView, AnimationLooperDelegate {
+//	private var turtle: Turtle
+//
+//	public var strokeColor: UIColor = UIColor.green {
+//		didSet {
+//			self.shapeLayers.forEach { layer in
+//				layer.strokeColor = strokeColor.cgColor
+//			}
+//		}
+//	}
+//	public var fillColor: UIColor = UIColor.clear {
+//		didSet {
+//			self.shapeLayers.forEach { layer in
+//				layer.fillColor = fillColor.cgColor
+//			}
+//		}
+//	}
+//
+//	public init(frame: CGRect, turtle: Turtle) {
+//		self.turtle = turtle
+//		super.init(frame: frame)
+//		self.backgroundColor = UIColor.clear
+//		self.shapeLayers = makeLayers()
+//	}
+//
+//	public convenience init(frame: CGRect,
+//							@TurtleBuilder builder:()-> [TurtleCommand]) {
+//		let turtle = Turtle(builder: builder)
+//		self.init(frame: frame, turtle: turtle)
+//	}
+//
+//	required init?(coder: NSCoder) {
+//		fatalError("init(coder:) has not been implemented")
+//	}
+//
+//	private var shapeLayers: [CAShapeLayer] = [] {
+//		willSet {
+//			self.shapeLayers.forEach { layer in
+//				layer.removeFromSuperlayer()
+//			}
+//		}
+//		didSet {
+//			self.shapeLayers.forEach { layer in
+//				self.layer.addSublayer(layer)
+//			}
+//		}
+//	}
+//
+//	private func makeLayers() -> [CAShapeLayer] {
+//		let center = CGPoint(x: self.bounds.width / 2, y: self.bounds.height / 2)
+//		var layers = [CAShapeLayer]()
+//		for sequence in turtle.lines {
+//			if sequence.count < 2 {
+//				continue
+//			}
+//			let path = UIBezierPath()
+//			path.lineWidth = 3
+//			path.move(to: transalte(sequence[0], center: center))
+//			for point in sequence[1...] {
+//				path.addLine(to: transalte(point, center: center))
+//			}
+//			let layer = CAShapeLayer()
+//			layer.frame = self.bounds
+//			layer.path = path.cgPath
+//			layer.strokeColor = strokeColor.cgColor
+//			layer.fillColor = fillColor.cgColor
+//			layer.lineWidth = 3
+//			layers.append(layer)
+//		}
+//		return layers
+//	}
+//
+//	private var animator: TurtleAnimator?
+//
+//	public func animate(showTurtle: Bool = false) {
+//		CATransaction.begin()
+//		CATransaction.disableActions()
+//		self.shapeLayers.forEach { layer in
+//			layer.removeAllAnimations()
+//			layer.strokeEnd = 0
+//		}
+//		CATransaction.commit()
+//		self.animator = TurtleAnimator(self.shapeLayers, showTurtle: showTurtle)
+//	}
+//
+//	fileprivate func turtleAnimatorDidEnd(_ animationLooper: TurtleAnimator) {
+//		self.animator = nil
+//	}
+//
+//	public func rebuildLayers() {
+//		self.shapeLayers = makeLayers()
+//	}
+//
+//}
+//

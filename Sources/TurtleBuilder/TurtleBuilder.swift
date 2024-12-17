@@ -11,7 +11,7 @@ public enum TurtleCommand {
 	/// Set the direction of the turtle.
 	case setHeading(Int)
 	/// Set the position of the turtle.
-	case setPoistion(Int, Int)
+	case setPosition(Int, Int)
 	/// Pen up.
 	case penUp
 	/// Pen down.
@@ -49,7 +49,7 @@ public func setHeading(_ degree: Int)-> TurtleCommand { .setHeading(degree) }
 public let setH = setHeading
 
 /// Set the position of the turtle.
-public func setPosition(_ x: Int, _ y: Int)-> TurtleCommand { .setPoistion(x, y) }
+public func setPosition(_ x: Int, _ y: Int)-> TurtleCommand { .setPosition(x, y) }
 
 /// Move the turtle without drawing a line.
 public func penUp()-> TurtleCommand { .penUp }
@@ -101,7 +101,7 @@ public func playMacro(_ name: String) -> TurtleCommand {
 	.playMacro(name)
 }
 
-@_functionBuilder
+@resultBuilder
 /// Function builder for `Turtle`
 public struct TurtleBuilder {
 
@@ -135,7 +135,7 @@ public class Turtle {
 		self.commands = builder()
 	}
 
-	public private (set) lazy var lines = self.complie()
+	public private(set) lazy var lines = self.compile()
 }
 
 extension Turtle {
@@ -144,7 +144,7 @@ extension Turtle {
 		return number * .pi / 180
 	}
 
-	private func exec(_ command: TurtleCommand, lines:inout [[TurtlePoint]],
+	private func exec(_ command: TurtleCommand, lines: inout [[TurtlePoint]],
 					  radian: inout Double,
 					  lastPoint: inout TurtlePoint,
 					  isPenDown: inout Bool,
@@ -173,7 +173,7 @@ extension Turtle {
 			radian = Turtle.deg2rad(Double(90))
 		case .setHeading(let degree):
 			radian = Turtle.deg2rad(Double(90 + degree))
-		case .setPoistion(let x, let y):
+		case .setPosition(let x, let y):
 			let newPoint = (Double(x), Double(y))
 			if lastPoint == newPoint {
 				return
@@ -232,7 +232,7 @@ extension Turtle {
 		}
 	}
 
-	private func complie() -> [[TurtlePoint]] {
+	private func compile() -> [[TurtlePoint]] {
 		var lines:[[TurtlePoint]] = []
 		var radian: Double = Turtle.deg2rad(Double(90))
 		var lastPoint = (Double(0), Double(0))
@@ -249,4 +249,3 @@ extension Turtle {
 	}
 
 }
-

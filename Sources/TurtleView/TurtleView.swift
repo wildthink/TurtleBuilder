@@ -1,76 +1,73 @@
-import Foundation
-#if os(macOS)
-import AppKit
-#endif
-#if os(iOS)
-import UIKit
-#endif
+import SwiftUI
 import TurtleBuilder
 
-public class TurtleView: PlatformView {
-	private var turtle: Turtle
+public struct TurtleView: View {
+	var turtle: Turtle
 
-	private func update() {
-		#if os(macOS)
-		self.setNeedsDisplay(self.bounds)
-		#endif
-		#if os(iOS)
-		self.setNeedsDisplay()
-		#endif
-	}
+    public var strokeColor: Color = .green
+    public var fillColor: Color = .clear
 
-	public var strokeColor: PlatformColor = PlatformColor.green {
-		didSet { update() }
-	}
+    public var body: some View {
+        Canvas { context, size in
+            let center = CGPoint(x: size.width / 2, y: size.height / 2)
+            
+//            strokeColor.setStroke()
+            var path = Path()
+            for sequence in turtle.lines {
+                if sequence.count < 2 {
+                    continue
+                }
+//                path.lineWidth = 3
+                path.move(to: transalte(sequence[0], center: center))
+                for point in sequence[1...] {
+                    path.addLine(to: transalte(point, center: center))
+                }
+//                let p1 = path.stroke()
+                path.closeSubpath()
+            }
+            context.stroke(path, with: .color(strokeColor), lineWidth: 4)
+            context.fill(path, with: .color(fillColor))
+        }
+    }
+    
+//    public override func draw(_ rect: CGRect) {
+//        super.draw(rect)
+//
+//
+//	}
+}
 
-	public var fillColor: UIColor = UIColor.clear {
-		didSet { update() }
-	}
 
-	public init(frame: CGRect, turtle: Turtle) {
-		self.turtle = turtle
-		super.init(frame: frame)
-		self.backgroundColor = UIColor.clear
-	}
+//@TurtleBuilder
+//func builder() -> [TurtleCommand] {
+let t1 = Turtle {
+    penDown()
+    loop(20) {
+        loop(180) {
+            forward(25)
+            right(20)
+        }
+        right(18)
+    }
+}
 
-	public convenience init(frame: CGRect, @TurtleBuilder builder:()-> [TurtleCommand]) {
-		let turtle = Turtle(builder:builder)
-		self.init(frame:frame, turtle: turtle )
-	}
+let turtle = Turtle {
+        penDown()
+        loop(9) {
+            left(140)
+            forward(30)
+            left(-100)
+            forward(30)
+        }
+        penUp()
+}
 
-	required init?(coder: NSCoder) {
-		fatalError("init(coder:) has not been implemented")
-	}
+#Preview {
+//    TurtleView(turtle: t1, strokeColor: .blue, fillColor: .yellow)
+//        .border(.red)
+//        .frame(width: 300, height: 500)
+    TurtleView(turtle: turtle, strokeColor: .blue, fillColor: .yellow)
+        .border(.red)
+        .frame(width: 300, height: 500)
 
-	#if os(macOS)
-	// For macOS.
-	public override var isFlipped: Bool {
-		true
-	}
-	#endif
-
-	public override func draw(_ rect: CGRect) {
-		super.draw(rect)
-
-		let center = CGPoint(x: self.bounds.width / 2, y:self.bounds.height / 2)
-		strokeColor.setStroke()
-		for sequence in turtle.lines {
-			if sequence.count < 2 {
-				continue
-			}
-			let path = PlatformPath()
-			path.lineWidth = 3
-			path.move(to: transalte(sequence[0], center: center))
-			for point in sequence[1...] {
-				#if os(macOS)
-				path.line(to: transalte(point, center: center))
-				#endif
-				#if os(iOS)
-				path.addLine(to: transalte(point, center: center))
-				#endif
-			}
-			path.stroke()
-		}
-
-	}
 }
