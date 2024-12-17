@@ -25,8 +25,9 @@ final class TurtleBuilderTests: XCTestCase {
 			penUp()
 		}
 		XCTAssertTrue(t.lines.count == 1)
-		XCTAssertTrue(t.lines[0][0] == (Double(0), Double(0)))
-		XCTAssertTrue(t.lines[0][1] == (Double(0), Double(10)), "\(t.lines[0][1])")
+        XCTAssertTrue(t.lines[0][0] == .zero)
+        XCTAssertTrue(t.lines[0][1] == CGPoint(x: 0, y: 10.0), "\(t.lines[0][1])")
+//		XCTAssertTrue(t.lines[0][1] == CGPoint(x: 0, y: 10.0), "\(t.lines[0][1])")
 	}
 
 	func testTurtleIf() {
@@ -41,8 +42,8 @@ final class TurtleBuilderTests: XCTestCase {
 			penUp()
 		}
 		XCTAssertTrue(t.lines.count == 1)
-		XCTAssertTrue(t.lines[0][0] == (Double(0), Double(0)))
-		XCTAssertTrue(t.lines[0][1] == (Double(0), Double(10)))
+		XCTAssertTrue(t.lines[0][0] == .zero)
+		XCTAssertTrue(t.lines[0][1] == CGPoint(x: 0, y: 10.0))
 	}
 
 	func testTurtleIf2() {
@@ -57,8 +58,8 @@ final class TurtleBuilderTests: XCTestCase {
 			penUp()
 		}
 		XCTAssertTrue(t.lines.count == 1)
-		XCTAssertTrue(t.lines[0][0] == (Double(0), Double(0)))
-		XCTAssertTrue(t.lines[0][1] == (Double(0), Double(10)))
+		XCTAssertTrue(t.lines[0][0] == .zero)
+		XCTAssertTrue(t.lines[0][1] == CGPoint(x: 0, y: 10.0))
 	}
 
 	func testTurtleLoop1() {
@@ -103,8 +104,8 @@ final class TurtleBuilderTests: XCTestCase {
 		}
 		XCTAssertTrue(t.lines.count == 10)
 		for i in t.lines {
-			XCTAssertTrue(i.first?.0 == Double(0))
-			XCTAssertTrue(i.first?.1 == Double(0))
+			XCTAssertTrue(i.first?.x == 0)
+			XCTAssertTrue(i.first?.y == 0)
 		}
 	}
 
@@ -117,8 +118,8 @@ final class TurtleBuilderTests: XCTestCase {
 			penUp()
 		}
 		XCTAssertTrue(t.lines.count == 1)
-		XCTAssertTrue(t.lines[0][0] == (Double(0), Double(0)) )
-		XCTAssertTrue(t.lines[0][1] == (Double(0), Double(10)) )
+		XCTAssertTrue(t.lines[0][0] == .zero )
+		XCTAssertTrue(t.lines[0][1] == CGPoint(x: 0, y: 10.0) )
 	}
 
 	func testTurn2() {
@@ -130,8 +131,8 @@ final class TurtleBuilderTests: XCTestCase {
 			penUp()
 		}
 		XCTAssertTrue(t.lines.count == 1)
-		XCTAssertTrue(t.lines[0][0] == (Double(0), Double(0)) )
-		XCTAssertTrue(t.lines[0][1] == (Double(0), Double(10)) )
+		XCTAssertTrue(t.lines[0][0] == .zero )
+		XCTAssertTrue(t.lines[0][1] == CGPoint(x: 0, y: 10.0) )
 	}
 
 	func testMacro() {
@@ -145,8 +146,8 @@ final class TurtleBuilderTests: XCTestCase {
 			penUp()
 		}
 		XCTAssertTrue(t.lines.count == 1)
-		XCTAssertTrue(t.lines[0][0] == (Double(0), Double(0)) )
-		XCTAssertTrue(t.lines[0][1] == (Double(0), Double(10)) )
+		XCTAssertTrue(t.lines[0][0] == .zero )
+		XCTAssertTrue(t.lines[0][1] == CGPoint(x: 0, y: 10.0) )
 	}
 
 	static var allTests = [

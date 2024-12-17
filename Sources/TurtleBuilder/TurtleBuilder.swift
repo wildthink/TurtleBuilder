@@ -1,7 +1,8 @@
+import CoreGraphics
 import Foundation
 
 /// The commands for `Turtle`.
-public enum TurtleCommand {
+public enum TurtleCommand: Sendable {
 	/// Does nothing.
 	case pass
 	/// Center the turtle.
@@ -28,7 +29,7 @@ public enum TurtleCommand {
 	case playMacro(String)
 }
 
-public typealias TurtlePoint = (Double, Double)
+public typealias TurtlePoint = CGPoint
 
 /// Do nothing.
 public func pass()-> TurtleCommand { .pass }
@@ -126,8 +127,8 @@ public struct TurtleBuilder {
 }
 
 /// The turtle that draws graphics.
-public class Turtle {
-	private var commands: [TurtleCommand]
+public final class Turtle {
+	private let commands: [TurtleCommand]
 
 	/// Creates a new instance.
 	/// - Parameter builder: The commands sent to the turtle.
@@ -161,7 +162,7 @@ extension Turtle {
 			}
 			isPenDown = true
 		case .center:
-			let newPoint = (Double(0), Double(0))
+            let newPoint = CGPoint.zero
 			if isPenDown {
 				if var lastSequence = lines.last {
 					lastSequence.append(newPoint)
@@ -174,7 +175,8 @@ extension Turtle {
 		case .setHeading(let degree):
 			radian = Turtle.deg2rad(Double(90 + degree))
 		case .setPosition(let x, let y):
-			let newPoint = (Double(x), Double(y))
+//			let newPoint = (Double(x), Double(y))
+            let newPoint = CGPoint(x: Double(x), y: Double(y))
 			if lastPoint == newPoint {
 				return
 			}
@@ -195,7 +197,8 @@ extension Turtle {
 			}
 			x = x * Double(length)
 			y = y * Double(length)
-			let newPoint = (lastPoint.0 + x, lastPoint.1 +  y)
+//			let newPoint = (lastPoint.0 + x, lastPoint.1 +  y)
+            let newPoint = CGPoint(x: lastPoint.x + x, y: lastPoint.y +  y)
 			if isPenDown {
 				if var lastSequence = lines.last {
 					lastSequence.append(newPoint)
@@ -235,7 +238,7 @@ extension Turtle {
 	private func compile() -> [[TurtlePoint]] {
 		var lines:[[TurtlePoint]] = []
 		var radian: Double = Turtle.deg2rad(Double(90))
-		var lastPoint = (Double(0), Double(0))
+        var lastPoint: CGPoint = .zero
 		var isPenDown: Bool = false
 		var macros = [String:[TurtleCommand]]()
 		for command in self.commands {
@@ -248,4 +251,41 @@ extension Turtle {
 		return lines
 	}
 
+}
+
+import SwiftUI
+
+extension Turtle: Shape {
+    public func path(in rect: CGRect) -> Path {
+        let center = CGPoint(x: rect.minX, y: rect.minY)
+        
+        var path = Path()
+//        path.move(to: center)
+        
+        for sequence in lines {
+            if sequence.count < 2 {
+                continue
+            }
+            path.move(to: translate(sequence[0], center: center))
+//            path.move(to: sequence[0])
+            for point in sequence[1...] {
+//                path.addLine(to: point)
+                path.addLine(to: translate(point, center: center))
+//                if lines[0][0] == point {
+//                    path.closeSubpath()
+//                }
+            }
+        }
+        if lines[0][0] == lines.last?[0] {
+            path.closeSubpath()
+        }
+        return path
+    }
+}
+
+func translate(_ position: CGPoint, center: CGPoint) -> CGPoint {
+    let x = center.x + CGFloat(position.x)
+    let y = center.y + (CGFloat(position.y) * 1)
+    let point = CGPoint(x: x, y: y)
+    return point
 }

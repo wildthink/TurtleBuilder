@@ -16,9 +16,9 @@ import Foundation
 //public typealias PlatformPath = UIBezierPath
 //#endif
 
-func transalte(_ position: (Double, Double), center: CGPoint) -> CGPoint {
-	let x = center.x + CGFloat(position.0)
-	let y = center.y + (CGFloat(position.1) * -1)
+func transalte(_ position: CGPoint, center: CGPoint) -> CGPoint {
+	let x = center.x + CGFloat(position.x)
+	let y = center.y + (CGFloat(position.y) * -1)
 	let point = CGPoint(x: x, y: y)
 	return point
 }
