@@ -56,7 +56,6 @@ public extension CGRect {
     func unitPoint(of point: CGPoint) -> UnitPoint {
         let unitX = (point.x - origin.x) / width
         let unitY = (point.y - origin.y) / height
-        
         return UnitPoint(x: unitX, y: unitY)
     }
         
@@ -67,9 +66,18 @@ public extension CGRect {
         return CGPoint(x: x, y: y)
     }
     
- 
     subscript(_ p: UnitPoint) -> CGPoint {
-            get { point(at: p) }
+        get {
+            point(at: p)
+        }
+        set {
+            let newX = origin.x + newValue.x - p.x * width
+            let newY = origin.y + newValue.y - p.y * height
+            self = CGRect(
+                origin: CGPoint(x: newX, y: newY),
+                size: size
+            )
+        }
     }
 }
 /**

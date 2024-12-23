@@ -114,7 +114,7 @@ struct AnimatePath: View {
         }
         .onGeometryChange(for: CGSize.self, of: \.size) {
             size = $0
-            print("size", size)
+//            print("size", size)
         }
     }
     
@@ -124,7 +124,7 @@ struct AnimatePath: View {
             .foregroundColor(Color.red)
             .frame(width: sz*2, height: sz*2)
 //            .offset(x: -sz, y: -sz)
-            .modifier(FollowEffect(pct: self.flag ? 1 : 0, path: path, rotate: false))
+//            .modifier(FollowEffect(pct: self.flag ? 1 : 0, path: path, rotate: false))
             .onAppear {
                 withAnimation(Animation.linear(duration: 20.0).repeatForever(autoreverses: false)) {
                     self.flag.toggle()
@@ -146,7 +146,7 @@ struct AnimatePath: View {
                      .resizable()
                      .foregroundColor(Color.red)
                      .frame(width: 50, height: 50).offset(x: -25, y: -25)
-                     .modifier(FollowEffect(pct: self.flag ? 1 : 0, path: path, rotate: true))
+//                     .modifier(FollowEffect(pct: self.flag ? 1 : 0, path: path, rotate: true))
                      .onAppear {
                          withAnimation(Animation.linear(duration: 4.0).repeatForever(autoreverses: false)) {
                              self.flag.toggle()

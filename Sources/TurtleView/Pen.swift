@@ -2,262 +2,190 @@
 //  Pen.swift
 //  TurtleBuilder
 //
-//  Created by Jason Jobe on 12/15/24.
+//  Created by Jason Jobe on 12/23/24.
 //
-
 import SwiftUI
 
-enum PenOp {
-    //    case pen(Color?)
-    case pen_up, pen_down
-    case closeSubpath
-    case move(to: UnitPoint)
-    // move(to: UnitPoint, clip: Shape) - stops at intersection of shape
-    case face(Angle)
-    case turn(Angle)
-    case forward(CGFloat)
-    case dot(CGFloat)
-    case left(face: Angle, step: CGFloat)
-    case right(face: Angle, step: CGFloat)
-    case loop(Int, [PenOp])
-    /*
-     // Anchor is the alignment point of the shape/string
-     case place(AnyShape, anchor: )
-     case print(String, anchor: )
-     */
+class Pen {
+    var ctx: GraphicsContext
+    var foreground: GraphicsContext.Shading
+    var font: Font
+    var pos: CGPoint
+    var box: CGRect
+    var size: CGSize { box.size }
+    
+    init(ctx: GraphicsContext,
+         foreground: GraphicsContext.Shading = .foreground,
+         font: Font,
+         pos: CGPoint = .zero,
+         box: CGRect) {
+        self.ctx = ctx
+        self.foreground = foreground
+        self.font = font
+        self.pos = pos
+        self.box = box
+    }
+    
+    @discardableResult
+    func move(to up: UnitPoint) -> Self {
+        pos = CGPoint(x: box.width * up.x, y: box.height * up.y)
+        return self
+    }
+    
+//    func draw(_ s: String) {
+    @discardableResult
+    func place(_ s: String, _ anchor: UnitPoint, at up: UnitPoint) -> Self {
+        let resolved = ctx.resolve(Text(s).font(font))
+        return place(resolved, anchor, at: up)
+    }
+       
+    func place(_ resolved: GraphicsContext.ResolvedText,
+               _ anchor: UnitPoint,
+               at pt: UnitPoint
+    ) -> Self {
+        // flips the y-origin for text
+//        var pt = up
+//        pt.y = -up.y
+        ctx.draw(resolved, at: box.point(at: anchor), anchor: pt)
+        return self
+    }
+
+    @discardableResult
+    func line(to e: UnitPoint, width: CGFloat = 2) -> Self {
+        let path = Path { p in
+            p.move(to: pos)
+            p.addLine(to: box[e])
+        }
+        pos = path.currentPoint ?? box[e]
+//            .scale(2)
+//        path.move(to: size.point(at: s))
+//        path.addLine(to: size.point(at: e))
+//        path.stroke(lineWidth: width)
+        ctx.stroke(path, with: .color(.blue), lineWidth: width)
+        return self
+    }
+
+    @discardableResult
+    func place<S: Shape>(
+        _ shape: S,
+        anchor: UnitPoint = .center,
+        in sz: CGSize,
+        at pt: UnitPoint,
+        rotation: Angle = .zero
+    ) -> Self {
+        var pbox = CGRect(origin: .zero, size: sz)
+        pbox[anchor] = self.box[pt]
+        pbox.size = sz
+
+        var xform = CGAffineTransform.identity
+        
+        if rotation != .zero {
+            let apt = pbox[anchor]
+            let (x, y) = (apt.x, apt.y)
+            xform = CGAffineTransform(translationX: x, y: y)
+                .rotated(by: rotation.radians)
+                .translatedBy(x: -x, y: -y)
+        }
+        
+        let path = shape.path(in: pbox)
+            .applying(xform)
+        
+        ctx.fill(path, with: .color(.red.opacity(0.2)))
+        return self
+    }
+
+    @discardableResult
+    func fill<S: Shape>(_ shape: S, color: Color) -> Self {
+        let path = shape.path(in: box)
+        ctx.fill(path, with: .color(color))
+        return self
+    }
+
 }
 
-//struct _Pen: Shape {
-//    var start: CGPoint = .zero
-//    var ops: [PenOp]
-//    
-//    func path(in rect: CGRect) -> Path {
-//        var pos: CGPoint = rect.size.point(at: .center)
-//        print("center", UnitPoint.center)
-//        print(pos, "in", rect)
-////        var draw = false
-////        var dir: Angle = .degrees(0)
-//        return Path { p in
-//            p.move(to: rect.midpoint)
-//            var f = rect
-//            let r = 50.0
-//            f.origin.x = pos.x - 25
-////            f.midpoint = pos
-//            f.size.width = r
-////            f.size.height = r
-//            p.addPath(Circle().path(in: f))
-//        }
+extension CGAffineTransform {
+    
+    init(rotationAngle: CGFloat, anchor: CGPoint) {
+        self.init(
+            a: cos(rotationAngle),
+            b: sin(rotationAngle),
+            c: -sin(rotationAngle),
+            d: cos(rotationAngle),
+            tx: anchor.x - anchor.x * cos(rotationAngle) + anchor.y * sin(rotationAngle),
+            ty: anchor.y - anchor.x * sin(rotationAngle) - anchor.y * cos(rotationAngle)
+        )
+    }
+
+    func rotated(by angle: CGFloat, anchor: CGPoint) -> Self {
+        let transform = Self(rotationAngle: angle, anchor: anchor)
+        return self.concatenating(transform)
+    }
+
+}
+
+//extension CGRect {
+//    init(_ size: CGSize) {
+//        origin = .zero
+//        self.size = size
 //    }
 //}
 
-extension CGRect {
-    var midpoint: CGPoint {
-        get { CGPoint(x: midX, y: minY) }
-        set {
-                origin = CGPoint(
-                    x: newValue.x - width / 2,
-                    y: newValue.y - height / 2)
-        }
-    }
-}
-
-struct Nib {
-    var pos: CGPoint
-    var draw = false
-    var dir: Angle = .degrees(0)
-}
-
-struct Pen: Shape {
-    var start: CGPoint = .zero
-    var ops: [PenOp]
-    
-    func path(in rect: CGRect) -> Path {
-        var nib = Nib(pos: start)
-        return _path(nib: &nib, in: rect)
-    }
-    
-    func _path(nib: inout Nib, in rect: CGRect) -> Path {
-//        var nib.pos: CGPoint = start // rect[start]
-//        var nib.draw = false
-//        var nib.dir: Angle = .degrees(0)
-        var p = Path()
-        
-        p.move(to: nib.pos)
-        
-        for op in ops {
-            switch op {
-            case .pen_up: nib.draw = false
-            case .pen_down: nib.draw = true
-            case .closeSubpath:
-                p.closeSubpath()
-                
-            case .move(to: let pt):
-//                dir = aim(at: pt)
-                nib.pos = goto(rect[pt])
-                
-            case .dot(let r):
-                var f = rect
-//                f.origin.x = pos.x - r/2
-//                f.origin.y = pos.y - r/2
-                f.size.width = r
-                f.size.height = r
-                f.midpoint = nib.pos
-                p.addPath(Circle().path(in: f))
-                p.move(to: nib.pos)
-                
-            case .face(let a):
-                nib.dir = a
-                
-            case .forward(let length):
-                var x = cos(nib.dir.radians)
-                var y = sin(nib.dir.radians)
-                if abs(x) == 1.0 {
-                    y = 0
-                } else if abs(y) == 1.0 {
-                    x = 0
-                }
-                x = x * length
-                y = y * length
-                let newPoint = CGPoint(x: nib.pos.x + x, y: nib.pos.y +  y)
-                nib.pos = goto(newPoint)
-//                if isPenDown {
-//                    if var lastSequence = lines.last {
-//                        lastSequence.append(newPoint)
-//                        lines[lines.count - 1] = lastSequence
-//                    }
-//                }
-//                lastPoint = newPoint
-            case .turn(let degree):
-//                let rad = Turtle.deg2rad(Double(degree))
-                nib.dir += degree
-                
-            case .left(face: let face, step: let step):
-                nib.dir = -face
-                let pt = point(angle: nib.dir.radians, distance: step)
-                nib.pos = goto(pt)
-
-            case .right(face: let face, step: let step):
-                nib.dir += face
-                var x = cos(nib.dir.radians)
-                var y = sin(nib.dir.radians)
-                if abs(x) == 1.0 {
-                    y = 0
-                } else if abs(y) == 1.0 {
-                    x = 0
-                }
-                x = x * step
-                y = y * step
-                let pt = CGPoint(x: nib.pos.x + x, y: nib.pos.y + y)
-//                print("right", draw, pt)
-//                let pt = point(angle: dir.radians, distance: step)
-                nib.pos = goto(pt)
-   
-            case .loop(let count, let ops):
-                var pt = nib.pos
-                for _ in 0..<count {
-                    let pen = Pen(ops: ops)
-                    p.addPath(pen._path(nib: &nib, in: rect))
-                }
-            }
-//            case .loop(let count, var innerPen):
-//                innerPen.start = rect.unitPoint(of: pos)
-//                var box = rect
-//                for _ in 0..<count {
-//                    box.midpoint = pos
-//                    let innerPath = innerPen.path(in: box)
-//                    p.addPath(innerPath)
-//                    pos = innerPath.currentPoint ?? pos
-//                }
-//            }
-        }
-        return p
-        
-        func goto(_ dest: CGPoint) -> CGPoint {
-            if nib.draw {
-                p.addLine(to: dest)
-            } else {
-                p.move(to: dest)
-            }
-            return dest
-        }
-        
-        func point(angle: CGFloat, distance: CGFloat) -> CGPoint {
-            let point = nib.pos
-            let x = point.x + distance * cos(angle)
-            let y = point.y + distance * sin(angle)
-//            print(x, y)
-            return CGPoint(x: x, y: y)
-        }
-        
-        func aim(at p: UnitPoint) -> Angle {
-            let dp = rect[p]
-            let dx = nib.pos.x - dp.x
-            let dy = nib.pos.y - dp.y
-            let ang = atan2(dy, dx)
-            return Angle(radians: ang)
-        }
-    }
-}
-
-let innerPen = Pen(ops: [
-//    .move(to: .center),
-    .pen_down,
-    .forward(20),
-    .turn(.degrees(120)),
-    .forward(20),
-//    .move(to: .topTrailing),
-//    .move(to: .bottom),
-    .closeSubpath,
-    .pen_up,
-    .turn(.degrees(90)),
-    .forward(20)
-//    .right(face: .degrees(90), step: 50),
-//    .left(face: .degrees(90), step: 50)
-])
-
-let star = Pen(ops: [
-    .move(to: .trailing),
-    .dot(10),
-    .pen_down,
-    .loop(9, [
-        .turn(.degrees(140)),
-        .forward(30),
-        .turn(.degrees(-100)),
-        .forward(30),
-    ]),
+//extension Pen {
+//    convenience init(ctx: GraphicsContext, font: Font, pos: CGPoint, size: CGSize) {
+//        self.init(ctx: ctx, font: , pos: <#T##CGPoint#>, box: <#T##CGRect#>)
+//        self.ctx = ctx
+//        self.font = font
+//        self.pos = pos
+//        self.box = CGRect(x: 0, y: 0, width: size.width, height: size.height)
 //    }
-        .pen_up,
-])
+//}
 
-let mainPen = Pen(ops: [
-    .move(to: .center),
-    .pen_down,
-    .dot(10),
-    .forward(40),
-    .turn(.degrees(45)),
-    .forward(40),
-    .turn(.degrees(-90)),
-    .forward(40),
-    .pen_up,
-//    .move(to: .center),
-//    .loop(8, innerPen),
-//    .face(.degrees(0)),
-//    loop(9) {
-//    .forward(20),
-//    .turn(.degrees(90)),
-//    .forward(30),
-//    .turn(.degrees(-100)),
-//    .forward(30),
-//    }
-        .pen_up,
-])
+/*
+ goto: .leading
+ face: .east
+ line: to: .trailing
+ 
+ line from: .leading, to: .trailing
+ place: Circle()
+ .scale(0.5(of: height))
+ .scale(height * 50%))
+    .fill(.red)
+   at: (x: .center, y: 25%)
+
+ goto: .leading
+ face: .east
+ step: (1/4)%
+ place: Circle().scale(0.5(of: height)).fill(.red)
+ right: 45°
+ */
+
+extension GraphicsContext {
+    func draw(_ s: String, font: Font, at p: CGPoint, anchor ap: UnitPoint) {
+        let resolved = self.resolve(Text(s).font(font))
+        draw(resolved, at: p, anchor: ap)
+    }
+}
+
+infix operator ..
+func ..(wd: CGFloat, ht: CGFloat) -> CGSize {
+    CGSize(width: wd, height: ht)
+}
+
+struct PenDemo: View {
+    var body: some View {
+        Canvas { ctx, size in
+            let cframe = CGRect(origin: .zero, size: size)
+            let pen = Pen(ctx: ctx, font: .caption, pos: .zero, box: cframe)
+            pen.move(to: .center)
+            pen.line(to: .trailing)
+            pen.place("Hello", .center, at: .bottomLeading)
+            pen.place(.rect(cornerRadius: 8), anchor: .center, in: 50..50, at: .center, rotation: .degrees(45))
+            pen.place(.circle, in: 20..20, at: .center)
+        }
+    }
+}
 
 #Preview {
-    ZStack {
-        star
-            .stroke(.green)
-            .border(.red)
-            .frame(width: 100, height: 100)
-    }
-    .frame(width: 300, height: 500)
+    PenDemo()
+        .frame(width: 200, height: 200)
 }

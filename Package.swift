@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "TurtleBuilder",
-    platforms: [.iOS(.v16), .macOS(.v14), .tvOS(.v16), .watchOS(.v10)],
+    platforms: [.iOS(.v17), .macOS(.v14), .tvOS(.v16), .watchOS(.v10)],
     products: [
         .library(
             name: "TurtleBuilder",
