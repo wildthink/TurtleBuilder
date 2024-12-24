@@ -73,130 +73,131 @@ struct Pencil: Shape {
     
     func path(in rect: CGRect) -> Path {
         var nib = Nib(pos: start)
-        return _path(nib: &nib, in: rect)
+        fatalError()
+//        return _path(nib: &nib, in: rect)
     }
     
-    func _path(nib: inout Nib, in rect: CGRect) -> Path {
-//        var nib.pos: CGPoint = start // rect[start]
-//        var nib.draw = false
-//        var nib.dir: Angle = .degrees(0)
-        var p = Path()
-        
-        p.move(to: nib.pos)
-        
-        for op in ops {
-            switch op {
-            case .pen_up: nib.draw = false
-            case .pen_down: nib.draw = true
-            case .closeSubpath:
-                p.closeSubpath()
-                
-            case .move(to: let pt):
-//                dir = aim(at: pt)
-                nib.pos = goto(rect[pt])
-                
-            case .dot(let r):
-                var f = rect
-//                f.origin.x = pos.x - r/2
-//                f.origin.y = pos.y - r/2
-                f.size.width = r
-                f.size.height = r
-                f.midpoint = nib.pos
-                p.addPath(Circle().path(in: f))
-                p.move(to: nib.pos)
-                
-            case .face(let a):
-                nib.dir = a
-                
-            case .forward(let length):
-                var x = cos(nib.dir.radians)
-                var y = sin(nib.dir.radians)
-                if abs(x) == 1.0 {
-                    y = 0
-                } else if abs(y) == 1.0 {
-                    x = 0
-                }
-                x = x * length
-                y = y * length
-                let newPoint = CGPoint(x: nib.pos.x + x, y: nib.pos.y +  y)
-                nib.pos = goto(newPoint)
-//                if isPenDown {
-//                    if var lastSequence = lines.last {
-//                        lastSequence.append(newPoint)
-//                        lines[lines.count - 1] = lastSequence
-//                    }
+//    func _path(nib: inout Nib, in rect: CGRect) -> Path {
+////        var nib.pos: CGPoint = start // rect[start]
+////        var nib.draw = false
+////        var nib.dir: Angle = .degrees(0)
+//        var p = Path()
+//        
+//        p.move(to: nib.pos)
+//        
+//        for op in ops {
+//            switch op {
+//            case .pen_up: nib.draw = false
+//            case .pen_down: nib.draw = true
+//            case .closeSubpath:
+//                p.closeSubpath()
+//                
+//            case .move(to: let pt):
+////                dir = aim(at: pt)
+//                nib.pos = goto(rect[pt])
+//                
+//            case .dot(let r):
+//                var f = rect
+////                f.origin.x = pos.x - r/2
+////                f.origin.y = pos.y - r/2
+//                f.size.width = r
+//                f.size.height = r
+//                f.midpoint = nib.pos
+//                p.addPath(Circle().path(in: f))
+//                p.move(to: nib.pos)
+//                
+//            case .face(let a):
+//                nib.dir = a
+//                
+//            case .forward(let length):
+//                var x = cos(nib.dir.radians)
+//                var y = sin(nib.dir.radians)
+//                if abs(x) == 1.0 {
+//                    y = 0
+//                } else if abs(y) == 1.0 {
+//                    x = 0
 //                }
-//                lastPoint = newPoint
-            case .turn(let degree):
-//                let rad = Turtle.deg2rad(Double(degree))
-                nib.dir += degree
-                
-            case .left(face: let face, step: let step):
-                nib.dir = -face
-                let pt = point(angle: nib.dir.radians, distance: step)
-                nib.pos = goto(pt)
-
-            case .right(face: let face, step: let step):
-                nib.dir += face
-                var x = cos(nib.dir.radians)
-                var y = sin(nib.dir.radians)
-                if abs(x) == 1.0 {
-                    y = 0
-                } else if abs(y) == 1.0 {
-                    x = 0
-                }
-                x = x * step
-                y = y * step
-                let pt = CGPoint(x: nib.pos.x + x, y: nib.pos.y + y)
-//                print("right", draw, pt)
-//                let pt = point(angle: dir.radians, distance: step)
-                nib.pos = goto(pt)
-   
-            case .loop(let count, let ops):
-                var pt = nib.pos
-                for _ in 0..<count {
-                    let pen = Pencil(ops: ops)
-                    p.addPath(pen._path(nib: &nib, in: rect))
-                }
-            }
-//            case .loop(let count, var innerPen):
-//                innerPen.start = rect.unitPoint(of: pos)
-//                var box = rect
+//                x = x * length
+//                y = y * length
+//                let newPoint = CGPoint(x: nib.pos.x + x, y: nib.pos.y +  y)
+//                nib.pos = goto(newPoint)
+////                if isPenDown {
+////                    if var lastSequence = lines.last {
+////                        lastSequence.append(newPoint)
+////                        lines[lines.count - 1] = lastSequence
+////                    }
+////                }
+////                lastPoint = newPoint
+//            case .turn(let degree):
+////                let rad = Turtle.deg2rad(Double(degree))
+//                nib.dir += degree
+//                
+//            case .left(face: let face, step: let step):
+//                nib.dir = -face
+//                let pt = point(angle: nib.dir.radians, distance: step)
+//                nib.pos = goto(pt)
+//
+//            case .right(face: let face, step: let step):
+//                nib.dir += face
+//                var x = cos(nib.dir.radians)
+//                var y = sin(nib.dir.radians)
+//                if abs(x) == 1.0 {
+//                    y = 0
+//                } else if abs(y) == 1.0 {
+//                    x = 0
+//                }
+//                x = x * step
+//                y = y * step
+//                let pt = CGPoint(x: nib.pos.x + x, y: nib.pos.y + y)
+////                print("right", draw, pt)
+////                let pt = point(angle: dir.radians, distance: step)
+//                nib.pos = goto(pt)
+//   
+//            case .loop(let count, let ops):
+//                var pt = nib.pos
 //                for _ in 0..<count {
-//                    box.midpoint = pos
-//                    let innerPath = innerPen.path(in: box)
-//                    p.addPath(innerPath)
-//                    pos = innerPath.currentPoint ?? pos
+//                    let pen = Pencil(ops: ops)
+//                    p.addPath(pen._path(nib: &nib, in: rect))
 //                }
 //            }
-        }
-        return p
-        
-        func goto(_ dest: CGPoint) -> CGPoint {
-            if nib.draw {
-                p.addLine(to: dest)
-            } else {
-                p.move(to: dest)
-            }
-            return dest
-        }
-        
-        func point(angle: CGFloat, distance: CGFloat) -> CGPoint {
-            let point = nib.pos
-            let x = point.x + distance * cos(angle)
-            let y = point.y + distance * sin(angle)
-//            print(x, y)
-            return CGPoint(x: x, y: y)
-        }
-        
-        func aim(at p: UnitPoint) -> Angle {
-            let dp = rect[p]
-            let dx = nib.pos.x - dp.x
-            let dy = nib.pos.y - dp.y
-            let ang = atan2(dy, dx)
-            return Angle(radians: ang)
-        }
-    }
+////            case .loop(let count, var innerPen):
+////                innerPen.start = rect.unitPoint(of: pos)
+////                var box = rect
+////                for _ in 0..<count {
+////                    box.midpoint = pos
+////                    let innerPath = innerPen.path(in: box)
+////                    p.addPath(innerPath)
+////                    pos = innerPath.currentPoint ?? pos
+////                }
+////            }
+//        }
+//        return p
+//        
+//        func goto(_ dest: CGPoint) -> CGPoint {
+//            if nib.draw {
+//                p.addLine(to: dest)
+//            } else {
+//                p.move(to: dest)
+//            }
+//            return dest
+//        }
+//        
+//        func point(angle: CGFloat, distance: CGFloat) -> CGPoint {
+//            let point = nib.pos
+//            let x = point.x + distance * cos(angle)
+//            let y = point.y + distance * sin(angle)
+////            print(x, y)
+//            return CGPoint(x: x, y: y)
+//        }
+//        
+//        func aim(at p: UnitPoint) -> Angle {
+//            let dp = rect[p]
+//            let dx = nib.pos.x - dp.x
+//            let dy = nib.pos.y - dp.y
+//            let ang = atan2(dy, dx)
+//            return Angle(radians: ang)
+//        }
+//    }
 }
 
 let innerPen = Pencil(ops: [

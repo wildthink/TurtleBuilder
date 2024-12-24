@@ -1,5 +1,6 @@
 import XCTest
-@testable import TurtleBuilder
+//@testable import TurtleBuilder
+@testable import TurtleView
 
 final class TurtleBuilderTests: XCTestCase {
 	func testTurtleEmpty() {

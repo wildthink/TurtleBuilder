@@ -183,23 +183,46 @@ public func / (left: CGSize, right: CGSize) -> CGSize {
 }
 
 
+/**
+    UnitPoint Convenience Operators
+ */
+public extension UnitPoint {
+    static func += ( point: inout Self, right: CGFloat) {
+        point.x += right
+        point.y += right
+    }
+    static func -= ( point: inout Self, right: CGFloat) {
+        point.x -= right
+        point.y -= right
+    }
+    static func *= ( point: inout Self, right: CGFloat) {
+        point.x *= right
+        point.y *= right
+    }
+    static func /= ( point: inout Self, right: CGFloat) {
+        point.x /= right
+        point.y /= right
+    }
+}
 
 /** CGPoint+OperatorsAdditions */
-public func += ( point: inout CGPoint, right: CGFloat) {
-    point.x += right
-    point.y += right
-}
-public func -= ( point: inout CGPoint, right: CGFloat) {
-    point.x -= right
-    point.y -= right
-}
-public func *= ( point: inout CGPoint, right: CGFloat) {
-    point.x *= right
-    point.y *= right
-}
-public func /= ( point: inout CGPoint, right: CGFloat) {
-    point.x /= right
-    point.y /= right
+public extension CGPoint {
+    static func += ( point: inout Self, right: CGFloat) {
+        point.x += right
+        point.y += right
+    }
+    static func -= ( point: inout Self, right: CGFloat) {
+        point.x -= right
+        point.y -= right
+    }
+    static func *= ( point: inout Self, right: CGFloat) {
+        point.x *= right
+        point.y *= right
+    }
+    static func /= ( point: inout Self, right: CGFloat) {
+        point.x /= right
+        point.y /= right
+    }
 }
 
 public func += (left: inout CGPoint, right: CGPoint) {

@@ -19,9 +19,11 @@ let package = Package(
             dependencies: []),
 		.target(
 			name: "TurtleView",
-			dependencies: ["TurtleBuilder"]),
+			dependencies: []),
 		.testTarget(
             name: "TurtleBuilderTests",
-            dependencies: ["TurtleBuilder"]),
+            dependencies: [
+                "TurtleView",
+            ]),
     ]
 )
