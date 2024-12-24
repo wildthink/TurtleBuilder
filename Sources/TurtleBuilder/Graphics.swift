@@ -8,7 +8,29 @@
 import SwiftUI
 import CoreGraphics
 
+// MARK: Angle Extensions
+public extension Angle {
+    static let north: Angle = .degrees(-90)
+    static let south: Angle = .degrees(90)
+    static let west: Angle  = .degrees(180)
+    static let east: Angle  = .degrees(0)
+}
+
+// MARK: UnitPoint Extensions
 public extension UnitPoint {
+    
+    static func polar(_ angle: Angle, length: CGFloat) -> UnitPoint {
+        UnitPoint(x: cos(angle.radians) * length, y: sin(angle.radians) * length)
+    }
+    
+    func point(at angle: Angle, length: CGFloat) -> UnitPoint {
+        UnitPoint(x: self.x + cos(angle.radians) * length, y: self.y + sin(angle.radians) * length)
+    }
+    
+    static func angle(_ angle:Angle) -> UnitPoint {
+        UnitPoint(angle)
+    }
+    
     /// - returns: The point on the perimeter of the unit square that is at angle `angle` relative to the center of the unit square.
     init(_ angle: Angle) {
         // Inspired by https://math.stackexchange.com/a/4041510/399217
@@ -28,6 +50,11 @@ public extension Comparable {
     func clamped(to range: ClosedRange<Self>) -> Self {
         return max(range.lowerBound, min(self, range.upperBound))
     }
+}
+
+infix operator ..
+public func ..(wd: CGFloat, ht: CGFloat) -> CGSize {
+    CGSize(width: wd, height: ht)
 }
 
 public extension CGSize {
@@ -64,6 +91,10 @@ public extension CGRect {
         let y = origin.y + unitPoint.y * height
         
         return CGPoint(x: x, y: y)
+    }
+    
+    subscript(_ p: CGPoint) -> UnitPoint {
+        unitPoint(of: p)
     }
     
     subscript(_ p: UnitPoint) -> CGPoint {
@@ -203,6 +234,19 @@ public extension UnitPoint {
         point.x /= right
         point.y /= right
     }
+    
+    static func + (point: Self, right: CGFloat) -> Self {
+        .init(x: point.x + right, y: point.y + right)
+    }
+    static func - (point: Self, right: CGFloat) -> Self {
+        .init(x: point.x - right, y: point.y - right)
+    }
+    static func * (point: Self, right: CGFloat) -> Self {
+        .init(x: point.x * right, y: point.y * right)
+    }
+    static func / (point: Self, right: CGFloat) -> Self {
+        .init(x: point.x / right, y: point.y / right)
+    }
 }
 
 /** CGPoint+OperatorsAdditions */
@@ -223,6 +267,20 @@ public extension CGPoint {
         point.x /= right
         point.y /= right
     }
+    
+    static func + (point: Self, right: CGFloat) -> Self {
+        .init(x: point.x + right, y: point.y + right)
+    }
+    static func - (point: Self, right: CGFloat) -> Self {
+        .init(x: point.x - right, y: point.y - right)
+    }
+    static func * (point: Self, right: CGFloat) -> Self {
+        .init(x: point.x * right, y: point.y * right)
+    }
+    static func / (point: Self, right: CGFloat) -> Self {
+        .init(x: point.x / right, y: point.y / right)
+    }
+
 }
 
 public func += (left: inout CGPoint, right: CGPoint) {
@@ -240,19 +298,6 @@ public func *= (left: inout CGPoint, right: CGPoint) {
 public func /= (left: inout CGPoint, right: CGPoint) {
     left.x /= right.x
     left.y /= right.y
-}
-
-public func + (point: CGPoint, right: CGFloat) -> CGPoint {
-    return CGPoint(x: point.x + right, y: point.y + right)
-}
-public func - (point: CGPoint, right: CGFloat) -> CGPoint {
-    return CGPoint(x: point.x - right, y: point.y - right)
-}
-public func * (point: CGPoint, right: CGFloat) -> CGPoint {
-    return CGPoint(x: point.x * right, y: point.y * right)
-}
-public func / (point: CGPoint, right: CGFloat) -> CGPoint {
-    return CGPoint(x: point.x / right, y: point.y / right)
 }
 
 public func + (left: CGPoint, right: CGPoint) -> CGPoint {
