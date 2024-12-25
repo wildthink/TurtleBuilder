@@ -11,9 +11,11 @@ protocol DrawingContext {
     func fill(_ path: Path, with style: any ShapeStyle)
     func stroke(_ path: Path, with: any ShapeStyle, lineWidth: CGFloat)
     
-    func resolve(_ text: String) -> GraphicsContext.ResolvedText
-    func resolve(_ text: Text) -> GraphicsContext.ResolvedText
+    func resolve(_ text: String, font: Font?) -> GraphicsContext.ResolvedText
+    func resolve(_:Image) -> GraphicsContext.ResolvedImage
+//    func resolve(_ text: Text) -> GraphicsContext.ResolvedText
     func draw(_: GraphicsContext.ResolvedText, at: CGPoint, anchor: UnitPoint)
+    func draw(_: GraphicsContext.ResolvedImage, at: CGPoint, anchor: UnitPoint)
 }
 
 
@@ -32,10 +34,15 @@ extension GraphicsContext: DrawingContext {
         draw(resolved, at: pin, anchor: anchor)
     }
 
-    func resolve(_ text: String) -> ResolvedText {
-        resolve(Text(text))
+    func resolve(image: Image) -> GraphicsContext.ResolvedImage {
+        self.resolve(image)
     }
     
+    func resolve(_ text: String, font f: Font? = nil) -> ResolvedText {
+        let f = f ?? self.font
+        return resolve(Text(text).font(f))
+    }
+
     func stroke(
         _ path: Path,
         with style: any ShapeStyle,

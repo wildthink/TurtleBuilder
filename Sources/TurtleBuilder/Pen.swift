@@ -48,16 +48,28 @@ class Pen {
         return self
     }
     
-    func place(_ str: String, _ anchor: UnitPoint, at pin: UnitPoint) {
-        let resolved = ctx.resolve(Text(str).font(font))
+    @discardableResult
+    func place(_ image: Image, _ anchor: UnitPoint, at pin: UnitPoint) -> Self {
+        let resolved = ctx.resolve(image)
+        ctx.draw(resolved, at: box.point(at: pin), anchor: anchor)
+        return self
+    }
+
+    
+    @discardableResult
+    func place(_ str: String, _ anchor: UnitPoint, at pin: UnitPoint) -> Self {
+        let resolved = ctx.resolve(str, font: font)
         place(resolved, anchor, at: pin)
+        return self
     }
        
+    @discardableResult
     func place(_ resolved: GraphicsContext.ResolvedText,
                _ anchor: UnitPoint,
                at pin: UnitPoint
-    ) {
+    ) -> Self {
         ctx.draw(resolved, at: box.point(at: pin), anchor: anchor)
+        return self
     }
 
     @discardableResult
@@ -101,44 +113,28 @@ class Pen {
         return self
     }
 
-    func fill<S: Shape>(_ shape: S, style: any ShapeStyle) {
+    @discardableResult
+    func fill<S: Shape>(_ shape: S, style: any ShapeStyle) -> Self {
         let path = shape.path(in: box)
         ctx.fill(path, with: style)
+        return self
     }
 
 }
 
 
-/*
- goto: .leading
- face: .east
- line: to: .trailing
- 
- line from: .leading, to: .trailing
- place: Circle()
- .scale(0.5(of: height))
- .scale(height * 50%))
-    .fill(.red)
-   at: (x: .center, y: 25%)
-
- goto: .leading
- face: .east
- step: (1/4)%
- place: Circle().scale(0.5(of: height)).fill(.red)
- right: 45°
- */
-
-//extension GraphicsContext {
-//    func draw(_ s: String, font: Font, at p: CGPoint, anchor ap: UnitPoint) {
-//        let resolved = self.resolve(Text(s).font(font))
-//        draw(resolved, at: p, anchor: ap)
-//    }
-//}
-
 extension Pen {
-    func line(facing: Angle, length: CGFloat) {
+    
+    @discardableResult
+    func move(facing: Angle, length: CGFloat) -> Self {
         let p = upos.point(at: facing, length: length)
-        line(to: p)
+        return move(to: p)
+    }
+
+    @discardableResult
+    func line(facing: Angle, length: CGFloat) -> Self {
+        let p = upos.point(at: facing, length: length)
+        return line(to: p)
     }
 }
 
@@ -151,24 +147,78 @@ struct PenDemo: View {
             pen
                 .move(to: .center)
                 .line(to: .trailing)
-                .place("Tops", .bottom, at: .center)
                         
-            pen.place("Bottom", .center, at: .center - 0.2)
             pen.place(.rect(cornerRadius: 8), anchor: .center, in: 50..50, at: .center, rotation: .degrees(45))
-            pen.fillStyle = .red.opacity(0.7)
+            pen.fillStyle = .yellow //.opacity(0.7)
             pen.place(.circle, in: 20..20, at: .center)
             
+            pen.place("Bottom", .center, at: .center - 0.2)
+                .place("Tops", .bottom, at: .center)
+
             pen.move(to: .center)
             pen.line(facing: .south, length: 0.25)
             pen.line(facing: .west, length: 0.2)
             pen.line(facing: .north, length: 0.2)
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(.blue)
         .font(.headline)
     }
 }
 
-#Preview {
+struct PlanDemo: View {
+    var body: some View {
+        Canvas { ctx, size in
+            let pen = Pen(ctx: ctx, box: size)
+
+            pen
+                .move(to: .leading)
+                .line(to: .trailing)
+//                .place(.rect, anchor: .bottomLeading, in: 80..20)
+//                .move(facing: .north, length: 0.2)
+                .place(symbol: "arrowtriangle.down", .bottomLeading, at: .leading)
+                .place(symbol: "arrowtriangle.down", .topTrailing, at: .trailing)
+                .move(to: .center)
+            
+            pen.font = .body
+                pen.place("event", .bottom, at: .center)
+//                .line(to: .trailing)
+                        
+//            pen.fillStyle = .yellow //.opacity(0.7)
+//            pen.place(.circle, in: 20..20, at: .center)
+//            
+//            pen.place("Bottom", .center, at: .center - 0.2)
+//                .place("Tops", .bottom, at: .center)
+//
+//            pen.move(to: .center)
+//            pen.line(facing: .south, length: 0.25)
+//            pen.line(facing: .west, length: 0.2)
+//            pen.line(facing: .north, length: 0.2)
+        }
+        .foregroundStyle(.blue)
+        .font(.headline)
+    }
+}
+
+extension Pen {
+    @discardableResult
+    func place(symbol: String, _ anchor: UnitPoint, at pin: UnitPoint? = nil) -> Self {
+//        let resolved = ctx.resolve(Image(systemName: symbol))
+        let pin = pin ?? upos
+        place(Image(systemName: symbol), anchor, at: pin)
+        return self
+    }
+}
+
+#Preview("Plan") {
+    PlanDemo()
+        .foregroundStyle(.white)
+        .font(.headline)
+        .frame(width: 200, height: 28)
+        .border(.red.opacity(0.3))
+        .padding()
+}
+
+#Preview("Demo Pen") {
     PenDemo()
         .foregroundStyle(.white)
         .font(.headline)

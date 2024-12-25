@@ -5,7 +5,8 @@
 // https://swiftui-lab.com/swiftui-animations-part3 (AnimatableModifier)
 //------------------------------------------------------------------------
 import SwiftUI
-#if DEMO
+
+//#if DEMO
 #Preview {
     ContentView()
         .frame(width: 600, height: 500)
@@ -1455,5 +1456,5 @@ struct AnimatableColorText: View {
 
     }
 }
-#endif
+//#endif
 
