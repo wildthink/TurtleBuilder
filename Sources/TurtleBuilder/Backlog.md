@@ -1,7 +1,6 @@
 #  Backlog
 
-<<<<<<< Updated upstream
-=======
+
 protocol Turtle {
     var pen: Pen { get set }
     func render(in rect: CGRect)
@@ -94,5 +93,3 @@ extension GraphicsContext: DrawingContext {
         self.fill(path, with: .style(AnyShapeStyle(style)))
     }
 }
-
->>>>>>> Stashed changes
