@@ -5,8 +5,35 @@
 //  Created by Jason Jobe on 12/15/24.
 //
 
+/*
+ https://github.com/EmilioPelaez/CGMath
+ https://github.com/mattt/Euler
+ */
+
 import SwiftUI
 import CoreGraphics
+
+// MARK: CGVector
+extension CGVector {
+    
+}
+
+public struct UnitVector {
+    var dx: CGFloat
+    var dy: CGFloat
+}
+
+// MARK: CGPoint - CGSize Cross reference
+extension CGPoint {
+    var width: CGFloat  { x }
+    var height: CGFloat { y }
+}
+
+extension CGSize {
+    var x: CGFloat { width }
+    var y: CGFloat { height }
+}
+
 
 // MARK: Angle Extensions
 public extension Angle {
