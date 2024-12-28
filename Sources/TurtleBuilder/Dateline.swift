@@ -10,17 +10,45 @@ import SwiftUI
 
 // AKA Storyline
 struct Dateline: View {
-    @State var config: DatelineConfiguration = .monthly
-    @State var center: Date = .now
+//    @State var config: DatelineConfiguration = .monthly
+    var timeframe: TimeFrame = .this(.year)
+    @State var center: Date
 
-    var columnWidth: CGFloat = 12
+    var columnWidth: CGFloat = 24
     @State var currentOffset: CGFloat = 0
     @State private var dragOffset: CGFloat = 0
     
     // Factor to reduce the sensitivity of the scrolling
     private let scrollSensitivityFactor: CGFloat = 0.5
     
+    init(timeframe: TimeFrame = .this(.year), columnWidth: CGFloat) {
+        self.timeframe = timeframe
+        self.center = timeframe.lerp(progress: 0.5)
+        self.columnWidth = columnWidth
+    }
+    
     var body: some View {
+        ScrollView {
+            HStack(spacing: 0) {
+                ForEach(timeframe.dates(by: .month), id: \.self) {
+                    cell(for: $0)
+                        .frame(width: columnWidth)
+                        .background {
+                            Color.blue
+                        }
+                        .foregroundStyle(.white)
+                }
+            }
+        }
+        .padding()
+        .border(.purple)
+    }
+    
+    func cell(for date: Date) -> some View {
+        Text(date, format: .dateTime.month().day())
+    }
+    
+    var _body: some View {
         Canvas { ctx, size in
             let pen = Pen(ctx: ctx, box: size)
 
@@ -36,7 +64,7 @@ struct Dateline: View {
                 pen.move(to: .center)
                     .place("event", .bottom)
             
-            for (ndx, day) in config.markDates().enumerated() {
+            for (ndx, day) in timeframe.dates(by: .month).enumerated() {
 //            for day in 1..<10 {
                 let ndx = CGFloat(ndx)
                 pen.move_to(x: ndx * columnWidth)
@@ -109,15 +137,20 @@ struct DatelineConfiguration {
 }
 
 extension DateInterval {
-    static func year(_ year: Int) -> DateInterval {
-        let calendar = Calendar.current
-        let start = calendar.date(from: DateComponents(year: year, month: 1, day: 1))!
-        let end = calendar.date(from: DateComponents(year: year + 1, month: 1, day: 1))!
-        return DateInterval(start: start, end: end)
-    }
+//    static func year(_ year: Int) -> DateInterval {
+//        let calendar = Calendar.current
+//        let start = calendar.date(from: DateComponents(year: year, month: 1, day: 1))!
+//        let end = calendar.date(from: DateComponents(year: year + 1, month: 1, day: 1))!
+//        return DateInterval(start: start, end: end)
+//    }
 
+    func this(_ cc: Calendar.Component) -> DateInterval {
+        Calendar.current.dateInterval(of: cc, for: .now)!
+    }
+    
     static var thisYear: DateInterval {
-        year(Calendar.current.component(.year, from: Date()))
+        Calendar.current.dateInterval(of: .year, for: .now)!
+//        year(Calendar.current.component(.year, from: Date()))
     }
 }
 
@@ -139,7 +172,7 @@ extension DateInterval {
 
 struct DatelineDemo: View {
     @State var origin: Date = .now
-    @State var width: CGFloat = 30
+    @State var width: CGFloat = 48
     
     var body: some View {
         VStack {
@@ -158,5 +191,52 @@ struct DatelineDemo: View {
     DatelineDemo()
         .padding()
         .border(.red)
-        .frame(width: 400, height: 128)
+        .frame(width: 400, height: 240)
+}
+
+// MARK: Timeframe
+struct TimeFrame {
+    let dateInterval: DateInterval
+    
+    init(_ dateInterval: DateInterval) {
+        self.dateInterval = dateInterval
+    }
+    
+    subscript<Value>(dynamicMember keypath: KeyPath<DateInterval,Value>) -> Value {
+        dateInterval[keyPath: keypath]
+    }
+    
+    /// Returns the TimeInterval between the start and "to" dates.
+    func duration(to date: Date) -> TimeInterval {
+        assert(date >= dateInterval.start && date <= dateInterval.end)
+        return dateInterval.start.timeIntervalSince(date)
+    }
+    
+    /// Returns the ratio [0, 1] of the TimeInterval between the start and "to" dates
+    /// over the TimeInterval of entire TimeFrame.
+    func progress(to date: Date) -> Double {
+        assert(date >= dateInterval.start && date <= dateInterval.end)
+        let dt = duration(to: date)
+        return dt / dateInterval.duration
+    }
+
+    /// Interprets percentage progress [0, 1] between start and end Dates
+    /// I negative progress value indicates an amount "before the end" instead
+    /// of "from the start",
+    func lerp(progress: Double) -> Date {
+        assert(progress >= -1.0 && progress <= 1.0)
+        let step = dateInterval.duration * progress
+        return (step < 0 ? dateInterval.end : dateInterval.start) + step
+    }
+}
+
+extension TimeFrame {
+    
+    static func this(_ cc: Calendar.Component) -> TimeFrame {
+        TimeFrame(Calendar.current.dateInterval(of: cc, for: .now)!)
+    }
+
+    func dates(by cc: Calendar.Component) -> [Date] {
+        dateInterval.dates(by: cc)
+    }
 }
