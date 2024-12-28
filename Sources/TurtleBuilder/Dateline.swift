@@ -1,6 +1,6 @@
 //
 //  Dateline.swift
-//  ShowcasePackage
+//  TurtleBuilder
 //
 //  Created by Jason Jobe on 12/1/24.
 //
@@ -28,14 +28,15 @@ struct Dateline: View {
     }
     
     var body: some View {
-        ScrollView {
+        ScrollView(.horizontal) {
             HStack(spacing: 0) {
                 ForEach(timeframe.dates(by: .month), id: \.self) {
                     cell(for: $0)
-                        .frame(width: columnWidth)
+                        .frame(width: columnWidth, height: 48)
                         .background {
                             Color.blue
                         }
+                        .border(.red)
                         .foregroundStyle(.white)
                 }
             }
